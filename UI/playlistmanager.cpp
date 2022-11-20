@@ -60,7 +60,7 @@ int playlistmanager::SelectSong(playlist *p){
  
  while(c!='\n'&&c!='q'){
   clear();
-  printw("q-quit|enter-select\n\n");
+  printw("q-quit|enter-select| total %d\n\n",size);
   int i;
   for(i=start;i<size;i++){
 	song s=*(p->getPointerAt(i));
