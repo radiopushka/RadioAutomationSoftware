@@ -75,11 +75,17 @@ string TimeManager::generatetimeline(){
 	int i3;
 	int start;
 	int draw=0;
+	int ding=0;
 	float anhour=24/oneblock;
+	PTime date;
 	for(i2=0;i2<7;i2++){
 	 start=0;
 	 for(i=start;i<oneblock;i++){
 	  draw=0;
+	  ding=0;
+	  if(((int)i*anhour)==date.getHour()&&i2==date.getDay()){
+		ding=1;  
+	  }
 	  for(i3=0;i3<size;i3++){
 	   playlist* p=pls->at(i3);
 	   int daystart=p->starttime->getDay();
@@ -99,9 +105,13 @@ string TimeManager::generatetimeline(){
 		if(daystart==dayend&&dayend==i2&&hourend>=i*anhour&&hourstart<=i*anhour){draw=1;}
 	   }
       }
+       if(ding==1){
+		  out=out+"+";
+	   }else{
         if(draw==0){
 		 out=out+" ";
 	    }else{out=out+"#";}
+	   }
 	 }
 	 out=out+"|";
     }
@@ -115,6 +125,9 @@ string TimeManager::generatetimeline(){
 		  case 4:day="Thur";break;
 		  case 5:day="Fri";break;
 		  case 6:day="Sat";break;	
+		}
+		if(i2==date.getDay()){
+		  day=">"+day;	
 		}
 		out=out+trimstring(oneblock,day)+" ";
 	}
