@@ -20,10 +20,10 @@ int playlistmanager::selectPlaylist(int s,PLmanager* info){
 	int start=0;
 	while(c!='\n'&&c!='q'&&c!='n'){
 	 clear();
-	 printw("Select the playlist to edit| w- up s- down| enter- select| q- quit|k- view the queue|v- clear the queue|n - new| m-play time manager\n");
+	 printw("Select the playlist to edit\nw up| s down| enter select| q quit| k view the queue| v clear the queue| n new\n m-> play time manager\n");
 	 line();
 	 int i;
-	 for(i=start;i<s;i++){
+	 for(i=start;i<s&&i<LINES-5+start;i++){
 	   if(index==i){
 		   printw(">");
 		   attron(A_STANDOUT);
@@ -217,7 +217,14 @@ void playlistmanager::songoptions(playlist p,int index,int isid,int memlock){
    printw("Path: ");
    attroff(A_BOLD);
    printw("%s\n",path.c_str());
-   printw("\n\nd-delete the song m-queue the song");
+   attron(A_BOLD);
+   printw("\n\nd");
+   attroff(A_BOLD);
+   printw("-delete the song");
+   attron(A_BOLD);
+   printw("\n\nm");
+   attroff(A_BOLD);
+   printw("-queue the song");
    char opt=getch();
    if(opt=='m'){
 	  song* s=p.getPointerAt(index);   
