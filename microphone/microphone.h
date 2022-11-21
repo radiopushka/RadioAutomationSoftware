@@ -7,8 +7,14 @@ class Microphone{
   int buffsize;
   char* buff;
   
+  volatile int skiprun=0;
+  
+  volatile int pitch=0;
+  
   snd_pcm_t *input;
   snd_pcm_t *output;
+  
+  volatile int bd=0;
   
   int init();
  public:
@@ -18,6 +24,10 @@ class Microphone{
   volatile int KILL=0;
   void repause();
   void toggle();
+  char calculateByte(char input,char number);
+  void DemoMachine();
+  void Pitch();
+  void normalaudio();
   void runner();
   void close();	
   void kill();

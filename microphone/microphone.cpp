@@ -23,12 +23,34 @@ int Microphone::init(){
 Microphone::Microphone(){
 	SUCCESSFULL=init();
 }
+void Microphone::normalaudio(){
+	bd=0;
+	pitch=0;
+	snd_pcm_set_params(input, SND_PCM_FORMAT_S16_LE,SND_PCM_ACCESS_RW_INTERLEAVED, 1, rate, 1, 500000);
+	snd_pcm_set_params(output, SND_PCM_FORMAT_S16_LE,SND_PCM_ACCESS_RW_INTERLEAVED, 1, rate, 1, 500000);
+}
+void Microphone::DemoMachine(){
+	 snd_pcm_set_params(input, SND_PCM_FORMAT_S16_LE,SND_PCM_ACCESS_RW_INTERLEAVED, 1, rate, 1, 5000);
+     snd_pcm_set_params(output, SND_PCM_FORMAT_S16_LE,SND_PCM_ACCESS_RW_INTERLEAVED, 1, rate, 1,10000);
+	  bd=1;
+
+}
+void Microphone::Pitch(){
+	pitch=1;
+	snd_pcm_set_params(input, SND_PCM_FORMAT_S16_LE,SND_PCM_ACCESS_RW_INTERLEAVED, 1, rate+rate/4, 1, 500000);
+	snd_pcm_set_params(output, SND_PCM_FORMAT_S16_LE,SND_PCM_ACCESS_RW_INTERLEAVED, 1, rate, 1, 500000);
+}
 void Microphone::toggle(){
 	if(RUNNING==1){
      snd_pcm_pause(input,1);
      RUNNING=0;
     }else{
 		snd_pcm_pause(input,0);
+		
+        snd_pcm_drop(output);
+        snd_pcm_prepare(output);
+        snd_pcm_drop(input);
+        snd_pcm_prepare(input);
 		RUNNING=1;
 	}
 }
@@ -46,21 +68,45 @@ void Microphone::kill(){
     RUNNING=0;
     close();
 }
+
 void Microphone::runner(){
+   skiprun=0;
    snd_pcm_pause(input,1);
    while(KILL!=1){
 	while(RUNNING==0){sleep(1);}
+
 	if(snd_pcm_readi (input, buff, buffsize/4)==-EPIPE){
 		snd_pcm_close(input);
 		snd_pcm_close(output);
 		free(buff);
 		init();
 	  }
-	  if(snd_pcm_writei(output, buff, buffsize/(4)) == -EPIPE){
+	  if(bd==1){
+	   snd_pcm_wait(output,10000);
+	   snd_pcm_wait(input,10000);
+	   if(snd_pcm_readi (input, buff, buffsize/4)==-EPIPE){
+		 snd_pcm_close(input);
+		 snd_pcm_close(output);
+		 free(buff);
+		 init();
+	   }
+		
+	  }
+	   if(snd_pcm_writei(output, buff, buffsize/4) == -EPIPE){
 		snd_pcm_close(input);
 		snd_pcm_close(output);
 		free(buff);
 		init();
+	   }
+	   snd_pcm_wait(output,10000);
+	   snd_pcm_wait(input,10000);
+	   skiprun++;
+	   if(skiprun>2000){//pitch resync
+		if(pitch==1){
+         snd_pcm_drop(input);
+         snd_pcm_prepare(input);
+	    }
+        skiprun=0;
 	  }
    }
 }
