@@ -1,3 +1,4 @@
+
 #include "UI/playlistmanager.cpp"
 #include<iostream>
 #include <exception>
@@ -11,12 +12,24 @@ playlistmanager p;
 volatile int exitv=0;
 volatile int hang=0;
 volatile int putname=0;
+volatile int PauseAS=0;
+
 string nowplaying="";
 string path="";
 Mixer m;
+MQueue manQ;
 Microphone mic;
 //orignal code by Evan Nikitin
-void songs( Mixer* m){
+void waitForEn(){
+	if(PauseAS==1){
+	  cout<<"\n\n--info song is over"<<endl;	
+	}
+	while(PauseAS==1){
+	 sleep(1);	
+	}
+}
+
+void songs( Mixer* m,MQueue* mq){
 	if(pm.canNext()==-1){sleep(1);//one second delay
 		
 		return;}
@@ -27,6 +40,7 @@ void songs( Mixer* m){
 	Queue a=pm.next();
 	song s3;
 	//debug point
+	 
 	 while(a.canNext()==1){
 		s3=a.getNext();
 		isreading=0;
@@ -38,6 +52,7 @@ void songs( Mixer* m){
 		try{
 		 if(tmpath.compare(path)!=0){//condition for the check
 		  s3.play(m);
+		  waitForEn();
 	     }
 	    }catch(...){}
 	    path=tmpath;
@@ -45,12 +60,17 @@ void songs( Mixer* m){
 		isreading=1;
         s3.empty();
         isreading=0;
+        while(mq->Size()>0){
+		  nowplaying=mq->nameAt(0);
+		  mq->play(m);
+		  waitForEn();	
+		}
     }
     a.clear();
 }
 void playSongs(){//song playing thread
  while(exitv==0){
-  songs(&m);	 
+  songs(&m,&manQ);	 
  }	
  m.closeMixer();
 }
@@ -58,6 +78,7 @@ void microphone(){
  mic.runner();
 }
 void mainInterface(){//ncurses main screen
+
  int c=0;
  int mi=0;
  while(c!='q'){
@@ -65,14 +86,34 @@ void mainInterface(){//ncurses main screen
   while(putname==1){}
   printw("Now Playing: %s\n",nowplaying.c_str());
   line();
-  printw("press p to manage playlists, press any key to update \"Now Playing\", press s to pause, press a to skip, press m to toggle ");
+  printw("press p to manage playlists, press any key to update \"Now Playing\", press s to pause, press j to jump, press a to skip, press m to toggle ");
   if(mi==1){attron(A_STANDOUT);}
-  printw("microphone\n");
+  printw("microphone");
   if(mi==1){attroff(A_STANDOUT);}
+  printw(" press g to pause after the end of this song");
+  if(PauseAS==1){printw(" (yes)");}
+  printw("\n");
   c=getch();	
+  if(c=='g'){
+	switch(PauseAS){
+	 case 1:PauseAS=0;break;
+	 case 0:PauseAS=1;break;
+	}  
+	
+  }
   if(c=='a'){
-	m.pause();
+	
 	m.ABORT=1;
+	m.pause();
+	m.unpause();
+	
+  } 
+  if(c=='j'){
+	
+	
+	m.PAUSE=0;
+	m.ABORT=1;
+	m.pause();
 	m.unpause();
 	
   } 
@@ -90,7 +131,7 @@ void mainInterface(){//ncurses main screen
 	}
   }
   if(c=='p'){
-	  p.openDialogue(&pm);
+	  p.openDialogue(&pm,&manQ);
   }
  }	
 }
@@ -112,7 +153,7 @@ int main(){
     pm.save();
     pm.clear();//cleanup
     curs_set(s);
-    
+    manQ.close();
     exit_curses(0);
     mic.kill();
     m.PAUSE=1;

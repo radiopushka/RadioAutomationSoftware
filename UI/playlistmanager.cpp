@@ -20,7 +20,7 @@ int playlistmanager::selectPlaylist(int s,PLmanager* info){
 	int start=0;
 	while(c!='\n'&&c!='q'&&c!='n'){
 	 clear();
-	 printw("Select the playlist to edit| w- up s- down| enter- select| q- quit|n - new| m-play time manager\n");
+	 printw("Select the playlist to edit| w- up s- down| enter- select| q- quit|k- view the queue|v- clear the queue|n - new| m-play time manager\n");
 	 line();
 	 int i;
 	 for(i=start;i<s;i++){
@@ -36,6 +36,12 @@ int playlistmanager::selectPlaylist(int s,PLmanager* info){
 	 c=getch();
 	 if(c=='s'||c==KEY_DOWN){index++;start++;if(index>=s-1){index=s-1;start--;}}
 	 if(c=='w'||c==KEY_UP){index--;start--;if(start<0){start=0;}if(index<0){index=0;}}
+	 if(c=='k'){
+	  viewQ();	 
+	 }
+	 if(c=='v'){
+	  mp->close();	 
+	 }
 	 if(c=='m'){
 	  TimeManager tm(info);	
 	  tm.show(); 
@@ -211,8 +217,12 @@ void playlistmanager::songoptions(playlist p,int index,int isid,int memlock){
    printw("Path: ");
    attroff(A_BOLD);
    printw("%s\n",path.c_str());
-   printw("\n\nd-delete the song");
+   printw("\n\nd-delete the song m-queue the song");
    char opt=getch();
+   if(opt=='m'){
+	  song* s=p.getPointerAt(index);   
+	  mp->add(s->getName(),s->getPath());
+   }
    if(opt=='d'){
 	  if(memlock==1){
 		while(iswriting==1){}
@@ -230,6 +240,28 @@ void playlistmanager::songoptions(playlist p,int index,int isid,int memlock){
    
    
    
+}
+void playlistmanager::viewQ(){
+ int size=mp->Size();
+ int i;
+ int scroll=0;
+ int c=0;
+ while(c!='q'){
+  clear();
+  for(i=scroll;i<size&&i<LINES-2+scroll;i++){
+	printw("%s\n",mp->nameAt(i).c_str());  
+  }
+  c=getch();
+  if(c=='w'||c==KEY_UP){
+	scroll--;  
+  }
+  if(c=='s'||c==KEY_DOWN){
+	scroll++;  
+  }
+  if(scroll<0||scroll>=size){
+	scroll=0;  
+  }
+ }	
 }
 void playlistmanager::DisPL(playlist* p,int start){
 	 int linedr;
@@ -333,7 +365,8 @@ void playlistmanager::NewPL(PLmanager* p){
 	   	 
     }
 }
-void playlistmanager::openDialogue(PLmanager* input){
+void playlistmanager::openDialogue(PLmanager* input,MQueue* mq){
+ mp=mq;
  while(1==1){
  int s=selectPlaylist(input->size(),input);
  clear();

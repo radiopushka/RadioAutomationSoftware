@@ -1,5 +1,5 @@
 #include <ncurses.h>
-#include "../../playlists/PLmanager.cpp"
+#include "../../playlists/manualqueue.cpp"
 
 class TimeManager{
 	private:

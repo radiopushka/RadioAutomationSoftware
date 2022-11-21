@@ -2,6 +2,7 @@
 
 class playlistmanager{
 	private:
+	MQueue* mp;
 	void DisPL(playlist* p,int start);
 	int selectPlaylist(int size,PLmanager* info);
 	int editPlaylist(playlist* p);
@@ -11,7 +12,8 @@ class playlistmanager{
 	void songoptions(playlist p,int index,int isid,int rc);
 	void addid(playlist p);
 	void adddir(playlist p);
+	void viewQ();
 	public:
-	void openDialogue(PLmanager* p);
+	void openDialogue(PLmanager* p,MQueue* mq);
 	
 };
