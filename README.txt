@@ -28,9 +28,9 @@ features:
 -all other software I know of for automated Radio Broadcasting is bloated and/or costs a lot of money in SUBSCRIPTIONS
 -simple output to the soundcard
 -manual Queue of songs to play
+-toggleable microphone input
 
 soon:
--toggleable microphone input
 -turntables
 
 
