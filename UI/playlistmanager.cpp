@@ -114,13 +114,16 @@ int playlistmanager::SelectId(playlist *p){
 int playlistmanager::editPlaylist(playlist* p){
 	int songs=p->countSongs();
 	int ids=p->countIDs();
-	string message="q-exit | d-delete | s-songs | i-IDs | g-add directory of songs | a-add song | f-add ID\n";
+	string message="q-exit | d-delete | s-songs | i-IDs | g-add directory of songs | a-add song | f-add ID\n c -clear songs\n";
 	clear();
 	printw(message.c_str());
 	char c=0;
 	while(c!='q'&&c!='d'){
     songs=p->countSongs();
 	ids=p->countIDs();
+	if(c=='c'){
+	  p->clearSongs();	
+	}
 	 if(c=='s'){
 	   if(songs>0){
 		   int s=SelectSong(p);
