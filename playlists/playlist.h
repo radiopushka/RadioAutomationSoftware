@@ -38,6 +38,7 @@ class playlist{
 	int getI(song s);
 	void delAt(int i);
 	void close();
+	void clearSongs();
 	list* getSongs();
 	void putId(song s);
 	song getID(int i);

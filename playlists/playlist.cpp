@@ -234,6 +234,20 @@ song playlist::getID(int i){//get the ID at this index
 	song s("","");
 	return s;
 }
+void playlist::clearSongs(){
+	struct list* cp=head;
+	struct list* tmp;
+	while(cp!=NULL){
+	 tmp=cp->next;
+	 cp->s->empty();
+	 free(cp->s);
+	 free(cp);
+	 cp=tmp;	
+	}
+	head=NULL;
+	*nsongs=0;
+	
+}
 void playlist::close(){//free memmory
 	free(nids);
 	free(nsongs);
