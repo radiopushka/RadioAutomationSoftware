@@ -86,14 +86,26 @@ void mainInterface(){//ncurses main screen
   while(putname==1){}
   printw("Now Playing: %s\n",nowplaying.c_str());
   line();
-  printw("press p to manage playlists, press any key to update \"Now Playing\", press s to pause, press j to jump, press a to skip, press m to toggle ");
+  printw("press p to manage playlists, press any key to update \"Now Playing\"\n press s to pause\n press j to jump, press a to skip\n press m to toggle ");
   if(mi==1){attron(A_STANDOUT);}
   printw("microphone");
   if(mi==1){attroff(A_STANDOUT);}
-  printw(" press g to pause after the end of this song");
+  printw("\n press g to pause after the end of this song");
   if(PauseAS==1){printw(" (yes)");}
   printw("\n");
+  printw("\nmicrophone options: u- enable demo machine, y- enable pitch shifter, o- normal audio\n");
   c=getch();	
+  if(c=='u'&&mi!=1){
+	mic.normalaudio();
+	mic.DemoMachine();  
+  }
+   if(c=='y'&&mi!=1){
+	mic.normalaudio();
+	mic.Pitch();  
+  }
+  if(c=='o'&&mi!=1){
+	mic.normalaudio();  
+  }
   if(c=='g'){
 	switch(PauseAS){
 	 case 1:PauseAS=0;break;

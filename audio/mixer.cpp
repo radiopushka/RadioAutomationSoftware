@@ -57,8 +57,9 @@ void Mixer::play(string file){
 	 int pcm=0;
      int rdv;
 	 while((rdv=read(readfd,buff,buff_size))>-1){
-		if(ABORT==1){ABORT=0;break;}
-		while(PAUSE==1){}
+		 while(PAUSE==1){}
+		if(ABORT==1){ABORT=0;free(buff);buff=NULL;close(readfd);return;}
+		
 		if ((pcm = snd_pcm_writei(pcm_handle, buff, buff_size/(nchannels*2))) == -EPIPE) {
 			
                  snd_pcm_prepare(pcm_handle);
@@ -106,8 +107,9 @@ void Mixer::playOgg(string file){
 	 break;
 	}
 	int pcm=0;
-	if(ABORT==1){ABORT=0;break;}
 	while(PAUSE==1){}
+	if(ABORT==1){ABORT=0;free(buff);buff=NULL;ov_clear(&vf);return;}
+	
 		if ((pcm = snd_pcm_writei(pcm_handle, buff, ret/4)) == -EPIPE) {
 			
                  snd_pcm_prepare(pcm_handle);
