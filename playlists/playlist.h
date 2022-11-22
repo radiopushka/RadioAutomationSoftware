@@ -15,6 +15,11 @@ struct IDs{
  song* s;
  struct IDs* next;	
 };
+struct PTimes{
+ PTime* start;
+ PTime* end;
+ struct PTimes* next;
+};
 
 class playlist{
 	private:
@@ -23,13 +28,32 @@ class playlist{
 	song convert(song *s);
 	int* nsongs;
 	int* nids;
+	
+	void addTimesBottom(PTime start,PTime end);
+	
+	
+	
 	public:
+	
+	int timecount=0;
+	
+	struct PTimes* playtimes=NULL;
+	int ShouldPlay();
+	void addTimesTop(PTime start,PTime end);
+	void removeTime(int index);
+	PTimes* getTAt(int i);
+	string TtoString();
+	void  TfromString(string in);
+	int countTimes();
+	
 	playlist();
-	PTime* starttime;
-	PTime* endtime;
 	playlist* copy();
-	void setEndTime(PTime in);
-	void setStartTime(PTime st);
+	
+	PTime* starttime;//depricated
+	PTime* endtime;//depricated
+	void setEndTime(PTime in);//depricated
+	void setStartTime(PTime st);//depricated
+	
 	int countSongs();
 	int countIDs();
 	song* getPointerAt(int i);
@@ -37,13 +61,14 @@ class playlist{
 	song getAt(int i);
 	int getI(song s);
 	void delAt(int i);
-	void close();
 	void clearSongs();
-	list* getSongs();
 	void putId(song s);
 	song getID(int i);
 	void removeId(int index);
 	IDs getIDs();
+	
 	void saveToFile(string name);
 	void loadFromFile(string name);
+	
+	void close();
 };

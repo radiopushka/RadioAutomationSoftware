@@ -104,7 +104,7 @@ Queue PLmanager::next(){
 	playlist* p;
 	while(tmp!=NULL){
 	 p=tmp->p;
-	 if(p->starttime->isPast()==1&&p->endtime->isPast()==-1){
+	 if(p->ShouldPlay()==1){
 		song inp(prevn,prevp);
 		Queue q(*p,beforeid,inp);//generate the playback queue
 		song tt=q.returnTracker();//return the last song information
@@ -123,7 +123,7 @@ int PLmanager::canNext(){
 	playlist* p;
 	while(tmp!=NULL){
 	 p=tmp->p;
-	 if(p->starttime->isPast()==1&&p->endtime->isPast()==-1){//does any play list match
+	 if(p->ShouldPlay()==1){//does any play list match
 		
 		return 1;
 	 }

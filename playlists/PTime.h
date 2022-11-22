@@ -7,6 +7,7 @@ class PTime{
 	 int hour;//0-23
 	 int minute;//0-60
 	public: 
+	 PTime(int dayi,int houri,int minutei);
 	 PTime();
 	 void setTime(int dayi,int houri,int minutei);
 	 string toString();

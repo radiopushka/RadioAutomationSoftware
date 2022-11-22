@@ -28,8 +28,7 @@ void TimeManager::autoOrganize(){
   int startminute=0;
   int i;
   for(i=0;i<size;i++){
-	playlist* p=pls->at(i);
-	p->starttime->setTime(startday,starthour,startminute);
+	PTime start(startday,starthour,startminute);
 	startday=startday+day;
 	starthour=starthour+truehour;
 	startminute=startminute+minutes;
@@ -39,7 +38,9 @@ void TimeManager::autoOrganize(){
 	  startminute=59;	
 	}
 	increment(&startday,&starthour,&startminute);
-	p->endtime->setTime(startday,starthour,startminute);
+	PTime stop(startday,starthour,startminute);
+	playlist* p=pls->at(i);
+	p->addTimesTop(start,stop);
   }
 }
 string TimeManager::trimstring(unsigned int width,string input){
@@ -66,7 +67,7 @@ for(i=0;i<end;i++){
 }
 return out;
 }
-string TimeManager::generatetimeline(){
+string TimeManager::generatetimeline(playlist* pin){
 	string out="";
 	int size=pls->size();
 	int oneblock=COLS/7-1;
@@ -76,6 +77,7 @@ string TimeManager::generatetimeline(){
 	int start;
 	int draw=0;
 	int ding=0;
+	int overlap=0;
 	float anhour=24/oneblock;
 	PTime date;
 	for(i2=0;i2<7;i2++){
@@ -86,31 +88,49 @@ string TimeManager::generatetimeline(){
 	  if(((int)i*anhour)==date.getHour()&&i2==date.getDay()){
 		ding=1;  
 	  }
+	  overlap=0;
 	  for(i3=0;i3<size;i3++){
 	   playlist* p=pls->at(i3);
-	   int daystart=p->starttime->getDay();
-	   int dayend=p->endtime->getDay();
-	   int hourstart=p->starttime->getHour();
-	   int hourend=p->endtime->getHour();
+	   if(pin!=NULL){p=pin;}
+	   struct PTimes* pullL=p->playtimes;
+	   while(pullL!=NULL){
+	   int daystart=pullL->start->getDay();
+	   int dayend=pullL->end->getDay();
+	   int hourstart=pullL->start->getHour();
+	   int hourend=pullL->end->getHour();
 	   if(daystart<=i2&&dayend>=i2){
+		 
 		if(hourstart<=i*anhour&&daystart==i2&&dayend!=i2){
-		 draw=1;	
+		 draw=1;
+		 overlap++;	
 		}
 		if(daystart<i2&&dayend>i2){
 		  draw=1;	
+		  overlap++;
 		}   
 		if(dayend==i2&&hourend>=i*anhour&&daystart!=i2){
 		  draw=1;
+		  overlap++;
 		}
 		if(daystart==dayend&&dayend==i2&&hourend>=i*anhour&&hourstart<=i*anhour){draw=1;}
 	   }
+	   pullL=pullL->next;
+       }
+       if(pin!=NULL){break;}
       }
        if(ding==1){
 		  out=out+"+";
 	   }else{
         if(draw==0){
 		 out=out+" ";
-	    }else{out=out+"#";}
+	    }else{
+			if(overlap<=1){
+			 out=out+"#";
+		    }else{
+			  out=out+"X";	
+			}
+			
+			}
 	   }
 	 }
 	 out=out+"|";
@@ -160,19 +180,95 @@ playlist* TimeManager::selectPlaylist(){
     if(c=='q'){return NULL;} 
     return pls->at(index);  
 }
-void TimeManager::editPtime(playlist* p,string name){
+int TimeManager::selectPlaylistByIndex(){
+	int size=pls->size();
+	int i;
+	int c=0;
+	int index=0;
+	while(c!='q'&&c!='\n'){
+	 clear();
+	 for(i=index;i<size&&i<LINES+index;i++){
+		if(i==index){printw(">");attron(A_STANDOUT);}else{printw(" ");}
+		printw("%s\n",pls->getName(i));
+		attroff(A_STANDOUT);
+	 }
+	 c=getch();
+	 if(c=='s'||c==KEY_DOWN){
+	   index++;
+	   if(index>=size){
+		 index--;   
+	   }	 
+	 }
+	 if(c=='w'||c==KEY_UP){
+	   index--;
+	   if(index<0){index=0;}	 
+	 }
+    }
+    if(c=='q'){return -1;} 
+    return index;  
+}
+PTimes* TimeManager::selectTime(playlist* p, string name,int exit){
+	int c=0;
+	int index=0;
+	int size;
+	int i;
+	string timeline=generatetimeline(p);
+	PTimes* selected=NULL;
+	while(c!='q'){
+	 clear();
+	 size=p->countTimes();
+	 printw("viewing timelines for %s , press q to exit, press d to delete, n to add a new time, enter to select\n%s\n",name.c_str(),timeline.c_str());	
+	 for(i=index;i<size&&i<LINES-5+index;i++){
+		 PTimes* pt=p->getTAt(i);
+	  	 if(i==index){
+		   printw(">");	
+		   selected= pt;
+		 }else{printw(" ");}
+		 printw("start: D:%d H:%d Min:%d  end: D:%d H:%d M:%d\n",pt->start->getDay(),pt->start->getHour(),pt->start->getMinute(),pt->end->getDay(),pt->end->getHour(),pt->end->getMinute());
+	 }
+	 c=getch();
+	 if(c=='\n'&&exit==1){
+	   break;	 
+	 }
+	 if(c=='d'){
+	   p->removeTime(index);
+	   timeline=generatetimeline(p);	 
+	 }
+	 if(c=='n'){
+	   PTime today;
+	   p->addTimesTop(today,today);	 
+	 }
+	 if(c=='\n'){
+		 editPtime(selected,name);
+		 timeline=generatetimeline(p);
+	 }
+	 if(c=='s'||c==KEY_DOWN){
+	   index++;
+	   if(index>=size){
+		 index--;   
+	   }	 
+	 }
+	 if(c=='w'||c==KEY_UP){
+	   index--;
+	   if(index<0){index=0;}	 
+	 }
+	}
+	if(c=='q'){selected=NULL;}
+    return selected;
+}
+void TimeManager::editPtime(PTimes* p,string name){
 	string text="now editing "+name;
 	int c=0;
-	int startday=p->starttime->getDay();
-	int endday=p->endtime->getDay();
-	int starthour=p->starttime->getHour();
-	int endhour=p->endtime->getHour();
-	int startmin=p->starttime->getMinute();
-	int endmin=p->endtime->getMinute();
+	int startday=p->start->getDay();
+	int endday=p->end->getDay();
+	int starthour=p->start->getHour();
+	int endhour=p->end->getHour();
+	int startmin=p->start->getMinute();
+	int endmin=p->end->getMinute();
 	int editing=0;
 	int cc=0;
 	int move=0;
-	playlist* selected=NULL;
+	PTimes* selected=NULL;
 	while(c!='q'&&c!='\n'){
 	 clear();
 	 printw("%s\n",text.c_str());
@@ -187,14 +283,14 @@ void TimeManager::editPtime(playlist* p,string name){
 	  if(c=='e'){startday=6;starthour=23;startmin=59;}
 	  if(selected!=NULL){
 		if(c=='p'){
-		 startday=selected->starttime->getDay();
-		 starthour=selected->starttime->getHour();
-		 startmin=selected->starttime->getMinute();
+		 startday=selected->start->getDay();
+		 starthour=selected->start->getHour();
+		 startmin=selected->start->getMinute();
 		}  
 		if(c=='y'){
-		 startday=selected->endtime->getDay();
-		 starthour=selected->endtime->getHour();
-		 startmin=selected->endtime->getMinute();
+		 startday=selected->end->getDay();
+		 starthour=selected->end->getHour();
+		 startmin=selected->end->getMinute();
 		} 
 		selected=NULL; 
 	  }
@@ -213,14 +309,14 @@ void TimeManager::editPtime(playlist* p,string name){
 	  if(c=='e'){endday=6;endhour=23;endmin=59;}
 	   if(selected!=NULL){
 		if(c=='p'){
-		 endday=selected->starttime->getDay();
-		 endhour=selected->starttime->getHour();
-		 endmin=selected->starttime->getMinute();
+		 endday=selected->start->getDay();
+		 endhour=selected->start->getHour();
+		 endmin=selected->start->getMinute();
 		}  
 		if(c=='y'){
-		 endday=selected->endtime->getDay();
-		 endhour=selected->endtime->getHour();
-		 endmin=selected->endtime->getMinute();
+		 endday=selected->end->getDay();
+		 endhour=selected->end->getHour();
+		 endmin=selected->end->getMinute();
 		} 
 		selected=NULL; 
 	  }
@@ -240,33 +336,43 @@ void TimeManager::editPtime(playlist* p,string name){
 	 if(c=='s'||c==KEY_DOWN){move=-1;}
 	 if(c==KEY_STAB||c=='\t'){if(editing==1){editing=0;}else{editing=1;}}
 	 if(c=='p'||c=='y'){
-	  selected=selectPlaylist();	 
+	  int pp=selectPlaylistByIndex();
+	  if(pp!=-1){
+		selected=selectTime(pls->at(pp),pls->getName(pp),1);  
+	  }	 
 	 }
    }
    if(c=='\n'){
-	   p->starttime->setTime(startday,starthour,startmin);
-	   p->endtime->setTime(endday,endhour,endmin);
+	   p->start->setTime(startday,starthour,startmin);
+	   p->end->setTime(endday,endhour,endmin);
    }
 }
 void TimeManager::show(){
-	
 	int size=pls->size();
-	string timeline=generatetimeline();
+	string timeline=generatetimeline(NULL);
 	int c=0;
 	int index=0;
 	while(c!='q'){
 	 clear();
-     printw("%s\npress p to auto organize, enter to edit, q to exit\n",timeline.c_str());
+     printw("%s\npress p to auto organize, l to view the time line of this playlist h to show all, enter to edit, q to exit\n",timeline.c_str());
      int i;
      for(i=index;i<size&&i<(LINES/2)-4+index;i++){
 	   playlist* p=pls->at(i);
 	   if(index==i){printw(">");attron(A_STANDOUT);}else{printw(" ");}
 	   printw("%s\n",pls->getName(i));
 	   attroff(A_STANDOUT);
-	   printw("  -start time: d:%d h:%d m:%d   ",p->starttime->getDay(),p->starttime->getHour(),p->starttime->getMinute());	
-	   printw("end time: d:%d h:%d m:%d\n",p->endtime->getDay(),p->endtime->getHour(),p->endtime->getMinute());
+	   if(p->playtimes!=NULL){
+	    printw("  -start time: d:%d h:%d m:%d   ",p->playtimes->start->getDay(),p->playtimes->start->getHour(),p->playtimes->start->getMinute());	
+	    printw("end time: d:%d h:%d m:%d\n",p->playtimes->end->getDay(),p->playtimes->end->getHour(),p->playtimes->end->getMinute());
+       }
 	 }
      c=getch();
+     if(c=='l'){
+	   	 timeline=generatetimeline(pls->at(index));
+	 }
+	 if(c=='h'){
+		 timeline=generatetimeline(NULL);
+	 }
      if(c=='s'||c==KEY_DOWN){
 	   index++;
 	   if(index>=size){
@@ -278,9 +384,9 @@ void TimeManager::show(){
 	   if(index<0){index=0;}	 
 	 }
 	 if(c=='\n'){
-	   	 editPtime(pls->at(index),string(pls->getName(index)));
-	   	 timeline=generatetimeline();
+	   	 selectTime(pls->at(index),string(pls->getName(index)),0);
+	   	 timeline=generatetimeline(NULL);
 	 }
-     if(c=='p'){autoOrganize();timeline=generatetimeline();}
+     if(c=='p'){autoOrganize();timeline=generatetimeline(NULL);}
     }
 }

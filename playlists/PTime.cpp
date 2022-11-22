@@ -71,6 +71,9 @@ minute=atoi(s);
 free(sorig);
 free(days);
 }
+PTime::PTime(int d,int h, int m){
+	setTime(d,h,m);
+}
 PTime::PTime(){
  	setTimeAsCurrent();
 }

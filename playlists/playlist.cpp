@@ -105,6 +105,8 @@ void playlist::setEndTime(PTime en){//end time set, never used
 playlist* playlist::copy(){
   playlist* dest=(playlist*)malloc(sizeof(playlist));
   new(dest) playlist;
+  dest->playtimes=playtimes;
+  dest->timecount=timecount;
   struct list* l=head;
   dest->setStartTime(*starttime);
   dest->setEndTime(*endtime);
@@ -272,24 +274,132 @@ void playlist::close(){//free memmory
 	 free(cp2);
 	 cp2=tmp2;	
 	}
+	struct PTimes* times=playtimes;
+	struct PTimes* tmp3;
+	while(times!=NULL){
+	  tmp3=times->next;
+	  free(times->start);
+	  free(times->end);
+	  free(times);
+	  times=tmp3;	
+	}
 	
 }
 
-
-
-struct list* playlist::getSongs(){
-	
- return head;	
+void playlist::addTimesTop(PTime start,PTime end){
+  struct PTimes* loft=(struct PTimes*)malloc(sizeof(struct PTimes));
+  PTime* pst=(PTime*)malloc(sizeof(PTime));	
+  PTime* pen=(PTime*)malloc(sizeof(PTime));
+  new(pst) PTime(start.getDay(),start.getHour(),start.getMinute());
+  new(pen) PTime(end.getDay(),end.getHour(),end.getMinute());
+  loft->start=pst;
+  loft->end=pen;
+  loft->next=playtimes;
+  playtimes=loft;
+  timecount++;
 }
+int playlist::ShouldPlay(){
+ struct PTimes* tx=playtimes;
+ while(tx!=NULL){
+   if(tx->start->isPast()==1&&tx->end->isPast()==-1){
+	 return 1;  
+   }
+   tx=tx->next;	 
+ }
+	return -1;
+}
+void playlist::addTimesBottom(PTime start,PTime end){
+  struct PTimes* loft=(struct PTimes*)malloc(sizeof(struct PTimes));
+  PTime* pst=(PTime*)malloc(sizeof(PTime));	
+  PTime* pen=(PTime*)malloc(sizeof(PTime));
+  new(pst) PTime(start.getDay(),start.getHour(),start.getMinute());
+  new(pen) PTime(end.getDay(),end.getHour(),end.getMinute());
+  loft->start=pst;
+  loft->end=pen;
+  loft->next=NULL;
+  if(playtimes==NULL){
+   playtimes=loft;
+  }else{
+	struct PTimes* st=playtimes;
+	while(st->next!=NULL){
+		st=st->next;
+	}
+	st->next=loft;
+  }
+  
+  timecount++;
+}
+int playlist::countTimes(){
+return timecount;	
+}
+PTimes* playlist::getTAt(int i){
+	int c=0;
+	struct PTimes* tmp=playtimes;
+	while(tmp!=NULL){
+	  if(c==i){
+		  return tmp;
+	  }
+	  c++;
+	  tmp=tmp->next;	
+	}
+	return NULL;
+}
+string playlist::TtoString(){
+	string out="";
+	struct PTimes* tmp=playtimes;
+	while(tmp!=NULL){
+	  out=out+tmp->start->toString()+","+tmp->end->toString()+",";
+	  tmp=tmp->next;	
+	}
+	return out;
+}
+void playlist::TfromString(string input){
+	string tmp=input;
+	string one;
+	string two;
+	PTime start;
+	PTime stop;
+	while(strstr(tmp.c_str(),",")!=NULL){
+	  one=tmp.substr(0,tmp.find(","));
+	  tmp=tmp.substr(tmp.find(",")+1);
+	  two=tmp.substr(0,tmp.find(","));
+	  tmp=tmp.substr(tmp.find(",")+1);
+	  start.fromString(one);
+	  stop.fromString(two);
+	  addTimesBottom(start,stop);
+	}
+}
+void playlist::removeTime(int i){
+ int c=0;
+ if(i==0){return;}
+ struct PTimes* prev;
+ struct PTimes* tmp=playtimes;
+ struct PTimes* v;
+ while(tmp!=NULL){
+   if(c==i){
+	 v=tmp->next;   
+	 free(tmp->start);
+	 free(tmp->end);
+	 free(tmp);
+	 prev->next=v;
+	 tmp=v;
+	 timecount--;
+   }else{
+	 prev=tmp;
+	 tmp=tmp->next;   
+   }
+   c++;	 
+ }	
+}
+
+
 void playlist::loadFromFile(string in){//load a playlist from file
  fstream f;
  f.open(in);
  if(!f.is_open()){return;}
  string line;
  getline(f,line);
- starttime->fromString(line);
- getline(f,line);
- endtime->fromString(line);
+ TfromString(line);
  while(getline(f,line)){
    if(line.compare("#IDS")==0){break;}
   
@@ -312,8 +422,7 @@ void playlist::saveToFile(string in){//save the playlist to file
 	ofstream of;
 	of.open(in);
 	if(!of.is_open()){return;}
-	of<<starttime->toString()<<endl;
-	of<<endtime->toString()<<endl;
+	of<<TtoString()<<endl;
 	struct list* songs=head;
 	while(songs!=NULL){
 	 of<<songs->s->toString()<<endl;
