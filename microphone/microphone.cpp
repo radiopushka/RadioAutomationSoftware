@@ -30,8 +30,8 @@ void Microphone::normalaudio(){
 	snd_pcm_set_params(output, SND_PCM_FORMAT_S16_LE,SND_PCM_ACCESS_RW_INTERLEAVED, 1, rate, 1, 500000);
 }
 void Microphone::DemoMachine(){
-	 snd_pcm_set_params(input, SND_PCM_FORMAT_S16_LE,SND_PCM_ACCESS_RW_INTERLEAVED, 1, rate, 1, 5000);
-     snd_pcm_set_params(output, SND_PCM_FORMAT_S16_LE,SND_PCM_ACCESS_RW_INTERLEAVED, 1, rate, 1,10000);
+	 snd_pcm_set_params(input, SND_PCM_FORMAT_S16_LE,SND_PCM_ACCESS_RW_INTERLEAVED, 1, rate, 1, 50000);
+     snd_pcm_set_params(output, SND_PCM_FORMAT_S16_LE,SND_PCM_ACCESS_RW_INTERLEAVED, 1, rate, 1,50000);
 	  bd=1;
 
 }
@@ -84,14 +84,20 @@ void Microphone::runner(){
 	  if(bd==1){
 	   snd_pcm_wait(output,10000);
 	   snd_pcm_wait(input,10000);
-	   if(snd_pcm_readi (input, buff, buffsize/4)==-EPIPE){
-		 snd_pcm_close(input);
-		 snd_pcm_close(output);
-		 free(buff);
-		 init();
+	  if(snd_pcm_writei(output, buff, buffsize/4) == -EPIPE){
+		snd_pcm_close(input);
+		snd_pcm_close(output);
+		free(buff);
+		init();
 	   }
-		
+	  char* throwaway=(char*)malloc(buffsize);
+	  snd_pcm_readi (input, throwaway, buffsize/4);
+	  free(throwaway);
+	  throwaway=(char*)malloc(buffsize);
+	  snd_pcm_readi (input, throwaway, buffsize/4);
+	  free(throwaway);
 	  }
+	  
 	   if(snd_pcm_writei(output, buff, buffsize/4) == -EPIPE){
 		snd_pcm_close(input);
 		snd_pcm_close(output);
