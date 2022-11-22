@@ -93,7 +93,7 @@ void mainInterface(){//ncurses main screen
   printw("\n press g to pause after the end of this song");
   if(PauseAS==1){printw(" (yes)");}
   printw("\n");
-  printw("\nmicrophone options: u- enable demo machine, y- enable pitch shifter, o- normal audio\n");
+  printw("\nmicrophone options: u- enable gadzometer, y- enable pitch shifter, o- normal audio\n");
   c=getch();	
   if(c=='u'&&mi!=1){
 	mic.normalaudio();
