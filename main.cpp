@@ -12,6 +12,7 @@ playlistmanager p;
 volatile int exitv=0;
 volatile int hang=0;
 volatile int putname=0;
+volatile int updateI=0;
 volatile int PauseAS=0;
 
 string nowplaying="";
@@ -30,7 +31,8 @@ void waitForEn(){
 }
 
 void songs( Mixer* m,MQueue* mq){
-	if(pm.canNext()==-1){sleep(1);//one second delay
+	int next=0;
+	if((next=pm.canNext())==-1){sleep(1);//one second delay
 		
 		return;}
 	//debug point
@@ -65,6 +67,7 @@ void songs( Mixer* m,MQueue* mq){
 		  mq->play(m);
 		  waitForEn();	
 		}
+		if(pm.canNext()!=next||updateI==1){updateI=0;break;}
     }
     a.clear();
 }
@@ -94,7 +97,14 @@ void mainInterface(){//ncurses main screen
   if(PauseAS==1){printw(" (yes)");}
   printw("\n");
   printw("\nmicrophone options: u- enable gadzometer, y- enable pitch shifter, o- normal audio\n");
+  printw("press z to set the ID playback frequency\n");
   c=getch();	
+  if(c=='z'){
+	  int songs=PromptInt("songs before ID",2,10,2);
+	  if(songs!=-1){
+	   pm.setSongsBeforeId(songs);
+      }
+  }
   if(c=='u'&&mi!=1){
 	mic.normalaudio();
 	mic.DemoMachine();  

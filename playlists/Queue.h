@@ -1,5 +1,5 @@
 #include "playlist.cpp"
-#define PRE_QUEUE_SIZE 10
+#define PRE_QUEUE_SIZE 40
 
 
 class Queue{

@@ -41,15 +41,17 @@ Queue::Queue(playlist in,int songbid,song prev){
 	//checks if a song is in the queue and does not put it in unless the playslist size is less than the queue size
 	//IDs can repeat
 	//songs can not repeat
+	int Qsize=PRE_QUEUE_SIZE;
 	toplay=NULL;
 	if(songbid==-1){return;}
 	int nsongs=in.countSongs();
+	if(nsongs<40){Qsize=nsongs;}
 	int nids=in.countIDs();
 	int count=0;
 	int scount=0;
 	int c=0;
 	string prevpath=prev.getPath();
-	while(count<PRE_QUEUE_SIZE){
+	while(count<Qsize){
 	 if(nids!=0){
 	 int idinde=rand()%nids;
 	 song id=in.getID(idinde);
@@ -62,7 +64,7 @@ Queue::Queue(playlist in,int songbid,song prev){
 		 idinde=rand()%nids;
 		 //id.empty();
 		 id=in.getID(idinde);
-		 if(nids<PRE_QUEUE_SIZE){
+		 if(nids<Qsize){
 		  if(c>10){break;}
 		 }
 	  }
@@ -82,7 +84,7 @@ Queue::Queue(playlist in,int songbid,song prev){
 		 s=in.getAt(sinde);
 		
 		 c++;
-		 if(nsongs<PRE_QUEUE_SIZE){
+		 if(nsongs<Qsize){
 		  if(prevpath.compare(s.getPath())!=0){break;}else{c=0;}
 		  if(c>10){break;};
 	     }
@@ -132,6 +134,7 @@ void Queue::clear(){//free memmory
  while(l!=NULL){
   tmp=l->next;
   l->s->empty();
+  free(l->s);
   free(l);
   l=tmp;	 
  }

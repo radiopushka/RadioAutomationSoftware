@@ -95,7 +95,7 @@ string Prompt(string text,string prev,char* charset){
 	string ret="";
 	int nal=strlen(charset);
 	int i;
-	int write=0;
+	int write=1;
 	int c=0;
 	char* inputsequence=(char*)malloc(COLS*sizeof(char));
 	int len=prev.length();
@@ -105,7 +105,7 @@ string Prompt(string text,string prev,char* charset){
 	strcpy(inputsequence,prev.c_str());
 	int length=len;
 	while(c!='\n'){
-	 write=0;
+	 write=1;
 	 clear();
 	 printw("\n ");
 	 printw(text.c_str());
@@ -114,21 +114,24 @@ string Prompt(string text,string prev,char* charset){
 	 box(stdscr,'*','*');
 	 c=getch();
 	 for(i=0;i<nal;i++){
-	   if(c!=charset[i]){
-		   write=1;
+	   if(c==charset[i]){
+		   write=0;
 		   break;
 	   }	 
 	 }
 	 if(c=='\n'){break;}
 	 if(c==KEY_BACKSPACE){
-	   if(length>0&&write==0){
+	   if(length>0){
 		inputsequence[length-1]=0;
 		length--;   
+	    
 	   }	 
 	 }else{
-	  inputsequence[length]=c;
-	  inputsequence[length+1]=0;
-	  length++;
+	  if(write==0){
+	   inputsequence[length]=c;
+	   inputsequence[length+1]=0;
+	   length++;
+	  }
 	  if(length>COLS-2){length--;}
      }
 	}
@@ -138,5 +141,28 @@ string Prompt(string text,string prev,char* charset){
 	ret=string(output);
 	free(inputsequence);
 	return ret;
+}
+int PromptInt(string display,int value,int max,int min){
+	int output=value;
+    int c=0;
+    while(c!='\n'&&c!='q'){
+	  clear();
+	  printw("%s\n\n",display.c_str());
+	  printw(">     ");
+	  attron(A_STANDOUT);
+	  printw("%d\n",output);
+	  attroff(A_STANDOUT);
+	  c=getch();
+	  if(c=='w'||c==KEY_UP){
+		output++;
+		if(output>max){output=max;}
+	  }	
+	  if(c=='s'||c==KEY_DOWN){
+		  output--;
+		  if(output<min){output=min;}
+	  }
+	}
+	if(c=='q'){return -1;}
+	return output;
 }
 

@@ -119,14 +119,16 @@ Queue PLmanager::next(){
 	return next();//loop until the right time comes
 }
 int PLmanager::canNext(){
+	int c=0;
 	struct ListofPLs* tmp=pls;
 	playlist* p;
 	while(tmp!=NULL){
 	 p=tmp->p;
 	 if(p->ShouldPlay()==1){//does any play list match
 		
-		return 1;
+		return c;
 	 }
+	 c++;
 	 tmp=tmp->next;	
 	}
 	
