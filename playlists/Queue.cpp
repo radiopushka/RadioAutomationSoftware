@@ -46,6 +46,7 @@ Queue::Queue(playlist in,int songbid,song prev){
 	if(songbid==-1){return;}
 	int nsongs=in.countSongs();
 	if(nsongs<40){Qsize=nsongs;}
+	if(Qsize<10){Qsize=10;}
 	int nids=in.countIDs();
 	int count=0;
 	int scount=0;
