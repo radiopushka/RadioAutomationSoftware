@@ -165,4 +165,29 @@ int PromptInt(string display,int value,int max,int min){
 	if(c=='q'){return -1;}
 	return output;
 }
+void PromptIntP(string display,volatile int* value,int max,int min){
+	int output=*value;
+	int initial=*value;
+    int c=0;
+    while(c!='\n'&&c!='q'){
+	  clear();
+	  printw("%s\n\n",display.c_str());
+	  printw(">     ");
+	  attron(A_STANDOUT);
+	  printw("%d\n",output);
+	  attroff(A_STANDOUT);
+	  c=getch();
+	  if(c=='w'||c==KEY_UP){
+		output++;
+		if(output>max){output=max;}
+	  }	
+	  if(c=='s'||c==KEY_DOWN){
+		  output--;
+		  if(output<min){output=min;}
+	  }
+	  *value=output;
+	}
+	if(c=='q'){*value=initial;}
+	
+}
 

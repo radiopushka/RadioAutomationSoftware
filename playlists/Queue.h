@@ -1,6 +1,6 @@
 #include "playlist.cpp"
-#define PRE_QUEUE_SIZE 40
-
+#define MAX_PRE_QUEUE_SIZE -2
+#define SMALL_QUEUE_SIZE  0
 
 class Queue{
 	private:
@@ -11,6 +11,7 @@ class Queue{
 	song strkr;
 	public:
 	song returnTracker();
+	Queue(playlist p,int songbid,song prev,int Qs);
 	Queue(playlist p,int songbid,song prev);
 	song getNext();
 	int canNext();

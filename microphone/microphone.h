@@ -7,17 +7,22 @@ class Microphone{
   int buffsize;
   char* buff;
   
-  volatile int skiprun=0;
+  volatile int skiprun=0;//нужно чтобы производит синхронизацаю при разных бит рейтах
+  
+  volatile int gadzos=0;
+  
+  
   
   volatile int pitch=0;
   
-  snd_pcm_t *input;
+  snd_pcm_t *input;//саунд интерфейсы
   snd_pcm_t *output;
   
   volatile int bd=0;
   
   int init();
  public:
+  volatile int gadzosFrequency=10;//чистота обреза
   int SUCCESSFULL=0;
   Microphone();
   volatile int RUNNING=0;

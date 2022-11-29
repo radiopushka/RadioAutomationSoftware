@@ -41,11 +41,11 @@ Queue::Queue(playlist in,int songbid,song prev){
 	//checks if a song is in the queue and does not put it in unless the playslist size is less than the queue size
 	//IDs can repeat
 	//songs can not repeat
-	int Qsize=PRE_QUEUE_SIZE;
+	int Qsize=0;
 	toplay=NULL;
 	if(songbid==-1){return;}
 	int nsongs=in.countSongs();
-	if(nsongs<40){Qsize=nsongs;}
+	Qsize=nsongs;
 	if(Qsize<10){Qsize=10;}
 	int nids=in.countIDs();
 	int count=0;

@@ -96,17 +96,22 @@ void mainInterface(){//ncurses main screen
   printw("\n press g to pause after the end of this song");
   if(PauseAS==1){printw(" (yes)");}
   printw("\n");
-  printw("\nmicrophone options: u- enable gadzometer, y- enable pitch shifter, o- normal audio\n");
-  printw("press z to set the ID playback frequency\n");
+  printw("\nmicrophone options: u- enable gadzometer press 1 to change gadzometer frequency, y- enable pitch shifter, o- normal audio\n");
+  printw("press z to set the ID playback frequency, press f to reload playlist after song\n");
   c=getch();	
+  if(c=='f'){
+	updateI=1;  
+  }
+  if(c=='1'){
+	PromptIntP("gadzometer frequency",&mic.gadzosFrequency,40,1);  
+  }
   if(c=='z'){
 	  int songs=PromptInt("songs before ID",2,10,2);
 	  if(songs!=-1){
 	   pm.setSongsBeforeId(songs);
       }
   }
-  if(c=='u'&&mi!=1){
-	mic.normalaudio();
+  if(c=='u'){
 	mic.DemoMachine();  
   }
    if(c=='y'&&mi!=1){
@@ -160,7 +165,9 @@ void mainInterface(){//ncurses main screen
 int main(){
 	srand(time(NULL));//random initialization
 	thread fplayer(playSongs);//queu and playback thread
+	sleep(1);
 	thread micro(microphone);//microphone thread
+	sleep(1);
 	setlocale(LC_ALL, "");
 	initscr();
 	noecho();

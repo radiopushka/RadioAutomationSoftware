@@ -94,7 +94,7 @@ void Mixer::playOgg(string file){
 	int i;
 	
 	if((i=ov_open(f, &vf,NULL,0))<0){usleep(1000);ov_clear(&vf);
-		cout<<"could not play:"<<file<<endl;
+		//cout<<"could not play:"<<file<<endl;
 		return;}
 	vorbis_info *vi = ov_info(&vf, -1);//extract information
     setRate(vi->rate);//supports different bit rates

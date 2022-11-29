@@ -30,9 +30,7 @@ void Microphone::normalaudio(){
 	snd_pcm_set_params(output, SND_PCM_FORMAT_S16_LE,SND_PCM_ACCESS_RW_INTERLEAVED, 1, rate, 1, 500000);
 }
 void Microphone::DemoMachine(){
-	 snd_pcm_set_params(input, SND_PCM_FORMAT_S16_LE,SND_PCM_ACCESS_RW_INTERLEAVED, 1, rate, 1, 50000);
-     snd_pcm_set_params(output, SND_PCM_FORMAT_S16_LE,SND_PCM_ACCESS_RW_INTERLEAVED, 1, rate, 1,50000);
-	  bd=1;
+	  if(bd==0){bd=1;}else{bd=0;}
 
 }
 void Microphone::Pitch(){
@@ -71,6 +69,8 @@ void Microphone::kill(){
 
 void Microphone::runner(){
    skiprun=0;
+   gadzos=0;
+   int i;
    snd_pcm_pause(input,1);
    while(KILL!=1){
 	while(RUNNING==0){sleep(1);}
@@ -82,23 +82,18 @@ void Microphone::runner(){
 		init();
 	  }
 	  if(bd==1){
-	   snd_pcm_wait(output,10000);
-	   snd_pcm_wait(input,10000);
-	  if(snd_pcm_writei(output, buff, buffsize/4) == -EPIPE){
-		snd_pcm_close(input);
-		snd_pcm_close(output);
-		free(buff);
-		init();
+	   gadzos++;
+	   if(gadzos>gadzosFrequency){//с какой чистотой обрезать, ждем нужного моммента
+		 if(gadzos>gadzosFrequency*2){
+		   gadzos=0;	 
+		 }
+		 for(i=0;i<buffsize;i++){
+			 buff[i]=0; //гадзометер срезает звука как это сделано на патоке Глада Валакаса
+		 }
 	   }
-	  char* throwaway=(char*)malloc(buffsize);
-	  snd_pcm_readi (input, throwaway, buffsize/4);
-	  free(throwaway);
-	  throwaway=(char*)malloc(buffsize);
-	  snd_pcm_readi (input, throwaway, buffsize/4);
-	  free(throwaway);
 	  }
 	  
-	   if(snd_pcm_writei(output, buff, buffsize/4) == -EPIPE){
+	   if(snd_pcm_writei(output, buff, buffsize/4) == -EPIPE){//reset
 		snd_pcm_close(input);
 		snd_pcm_close(output);
 		free(buff);
