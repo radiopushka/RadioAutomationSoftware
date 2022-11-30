@@ -29,6 +29,7 @@ features:
 -simple output to the soundcard
 -manual Queue of songs to play
 -toggleable microphone input
+- sound effects(only gadzometer right now)
 
 soon:
 -turntables
