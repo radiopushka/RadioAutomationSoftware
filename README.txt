@@ -35,15 +35,10 @@ soon:
 -turntables
 
 
--first version, there will be bugs
+
 -binary compiled on MX Linux OS
 -took me several weeks of coding to get here
 -written in C and C++
 
-Слава СССР!!!!
-Наше будущее
-Работа это свобода!
-Деньги и капитализм это рабство!
-Частная собственность не нужна!
-made in Russia
+
 
