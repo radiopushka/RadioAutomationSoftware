@@ -69,9 +69,9 @@ int playlistmanager::SelectSong(playlist *p){
   printw("q-quit|enter-select| total %d\n\n",size);
   int i;
   for(i=start;i<size;i++){
-	song s=*(p->getPointerAt(i));
+	song* s=p->getPointerAt(i);
 	if(index==i){printw(">");attron(A_STANDOUT);}else{printw(" ");}
-	printw("%s\n",s.getName().c_str());  
+	printw("%s\n",s->getName().c_str());  
 	attroff(A_STANDOUT);
 	if(i-start>LINES-4){break;}
   }
@@ -79,6 +79,17 @@ int playlistmanager::SelectSong(playlist *p){
   if(c=='s'||c==KEY_DOWN){index++;start++;if(index>=size-1){index=size-1;start--;}}
   if(c=='w'||c==KEY_UP){index--;start--;if(start<0){start=0;}if(index<0){index=0;}}
   
+  if(c!='s'&&c!='w'&&c!='\n'&&c!='q'){
+  char first=0;
+  int previ=index;
+  while(first!=c&&index<size){
+   first=(p->getPointerAt(index))->getName().c_str()[0];
+   index++;
+  }
+  if(first!=c){
+   index=previ;
+  }else{index--;start=index;}
+  }
  }
  clear();
  if(c=='q'){return -1;}
@@ -114,14 +125,14 @@ int playlistmanager::SelectId(playlist *p){
 int playlistmanager::editPlaylist(playlist* p){
 	int songs=p->countSongs();
 	int ids=p->countIDs();
-	string message="q-exit | d-delete | s-songs | i-IDs | g-add directory of songs | a-add song | f-add ID\n c -clear songs\n";
+	string message="q-exit | D-delete | s-songs | i-IDs | g-add directory of songs | a-add song | f-add ID\n C -clear songs | l-add all non-added songs from dir | r-remove non-existing(by path) songs\n";
 	clear();
 	printw(message.c_str());
 	char c=0;
 	while(c!='q'&&c!='d'){
     songs=p->countSongs();
 	ids=p->countIDs();
-	if(c=='c'){
+	if(c=='C'){
 	  p->clearSongs();	
 	}
 	 if(c=='s'){
@@ -131,6 +142,28 @@ int playlistmanager::editPlaylist(playlist* p){
 			  songoptions(*p,s,0,1);   
 		   }
 	   }	 
+	 }
+	 if(c=='r'){
+	  int i;
+	  string path;
+	  song* s;
+	  fstream f;
+	  while(iswriting==1){}
+	  isreading=1; 
+	  for(i=0;i<songs;i++){
+	    s=p->getPointerAt(i);
+	    if(s!=NULL){
+	     path=s->getPath();
+         f.open(path.c_str());
+         if(!f.is_open()){ 
+		   p->delAt(i);  
+	        
+	       
+         }
+         f.close();
+        }
+	  }
+	  isreading=0;
 	 }
 	 if(c=='i'){
 	   if(ids>0){
@@ -168,13 +201,38 @@ int playlistmanager::editPlaylist(playlist* p){
 		 if(f.endsWith(string(name),".wav")==1||f.endsWith(string(name),".ogg")==1){
 			song s(f.getNameFromFileName(string(name)),f.getFinalPath()+"/"+string(name));
 			while(iswriting==1){}
-	        isreading=1; 
+	        isreading=1;
 			p->add(s); 
 			isreading=0;
 		  }	
 		}
 		closedir(d);
 	  }	 
+     }
+     if(c=='l'){
+	   filechooser f;
+	   f.setDef();
+	   f.setDirOnly();
+	   int cinfo=f.show();
+	   if(cinfo==1){
+		DIR *d=opendir(f.getFinalPath().c_str());
+		dirent *dif;
+		while((dif=readdir(d))!=NULL){
+		 char* name=dif->d_name;
+		 if(f.endsWith(string(name),".wav")==1||f.endsWith(string(name),".ogg")==1){
+			song s(f.getNameFromFileName(string(name)),f.getFinalPath()+"/"+string(name));
+			while(iswriting==1){}
+	        isreading=1; 
+	        if(p->getI(s)==-1){ //the only difference between g and l
+			 p->add(s); 
+			}else{
+			 s.empty();
+			}
+			isreading=0;
+		  }	
+		}
+		closedir(d);
+	  }	  isreading=0;
      }
 	 if(c=='a'){
 	   filechooser f;
@@ -195,7 +253,7 @@ int playlistmanager::editPlaylist(playlist* p){
 	DisPL(p,2);
 	 c=getch();	
 	}
-	if(c=='d'){
+	if(c=='D'){
 	 return 1;
 	}
 	return -1;
@@ -221,7 +279,7 @@ void playlistmanager::songoptions(playlist p,int index,int isid,int memlock){
    attroff(A_BOLD);
    printw("%s\n",path.c_str());
    attron(A_BOLD);
-   printw("\n\nd");
+   printw("\n\nD");
    attroff(A_BOLD);
    printw("-delete the song");
    attron(A_BOLD);
@@ -233,7 +291,7 @@ void playlistmanager::songoptions(playlist p,int index,int isid,int memlock){
 	  song* s=p.getPointerAt(index);   
 	  mp->add(s->getName(),s->getPath());
    }
-   if(opt=='d'){
+   if(opt=='D'){
 	  if(memlock==1){
 		while(iswriting==1){}
 	    isreading=1;  

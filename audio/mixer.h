@@ -11,9 +11,9 @@
 class Mixer{
 	private:
 	
-	 unsigned int rate;
+	 unsigned int rate=44100;
 	 //for the audio interface:
-     snd_pcm_t *pcm_handle;
+     snd_pcm_t *pcm_handle=NULL;
      
      int buff_size;
      int readfd;

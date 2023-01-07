@@ -5,7 +5,7 @@
 int Mixer::init(){
 	readfd=-1;
 	nchannels=2;
-	
+	rate=44100;
 	if(snd_pcm_open(&pcm_handle, PCM_DEVICE,SND_PCM_STREAM_PLAYBACK, 0)<0){
      return -1;//on failure
     }

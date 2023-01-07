@@ -24,8 +24,8 @@ int playlist::getI(song s){//get index, never used, may be used later but needs 
 	struct list* cp=head;
 	int c=0;
 	while(cp!=NULL){
-	 song ss=convert(cp->s);
-	 if(ss.getName().compare(s.getName())&&ss.getPath().compare(s.getPath())){
+	 song* ss=cp->s;
+	 if(ss->getName().compare(s.getName())==0&&ss->getPath().compare(s.getPath())==0){
 	   return c;	 
 	 }
 	 c++;
@@ -418,7 +418,7 @@ void playlist::loadFromFile(string in){//load a playlist from file
  
 }
 void playlist::saveToFile(string in){//save the playlist to file
-	if(nsongs<=0){return;}
+	if(*nsongs<=0){return;}
 	ofstream of;
 	of.open(in);
 	if(!of.is_open()){return;}
@@ -430,7 +430,7 @@ void playlist::saveToFile(string in){//save the playlist to file
 	}
 	of<<"#IDS"<<endl;
 	struct IDs* id=ids;
-	if(nids<=0){return;}
+	if(*nids<=0){return;}
 	while(id!=NULL){
 	  of<<(*(id->s)).toString()<<endl;
 	  id=id->next;	
